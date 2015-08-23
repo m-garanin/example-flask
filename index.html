@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Test page</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+            
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
+     
+    <script>
+      angular.module('testApp', []).controller('TweetCtrl', ['$scope', '$http',
+        function($scope, $http) {
+           $scope.tweets = [];
+           $scope.error = '';
+           $scope.wait = false;
+
+           console.log("INIT CTRL");
+           $scope.search = function(){ 
+              $scope.tweets = [];
+              $scope.error = '';
+              $scope.wait = true;
+ 
+              $http.get('/api/tweets/top', {params:{q:$scope.query}}).then(
+                 function(resp){ $scope.wait=false; $scope.tweets = resp.data.tweets; },
+                 function(resp){ $scope.wait=false; $scope.error = resp.data.reason;}
+               );
+           }
+      }]);
+    
+     
+
+    </script>
+
+  </head>
+  
+  <body ng-app="testApp">
+    <div class="container"  style="margin-top:30px;" ng-controller="TweetCtrl">
+      <div class="row">
+	<div class="col-md-8 col-md-offset-2">
+	  <input type="text" class="form-control" placeholder="query" ng-model="query">
+	  <p class="text-danger" ng-bind="error"></p>
+	  
+	  <center ng-show="wait">Loading ...</center>
+	
+	</div>
+	<div class="col-md-2">
+	  <button class="btn btn-primary" ng-click="search()">Search</button>
+	</div>
+
+      </div>
+      
+      <div class="row">
+	<center ng-show="tweets.length==0 && wait==false">No results</center>
+	<p class="bg-info" ng-repeat="tw in tweets">
+	{{ tw.text }}
+	</p>
+
+      </div>
+    </div>
+
+
+  </body>
+</html>
+

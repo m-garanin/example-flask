@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 import json
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, send_from_directory, request
 from werkzeug.contrib.cache import SimpleCache
 
 import tw_api
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 cache = SimpleCache() 
 
 
 @app.route('/')
 def index():
-    return 'index.html'
+    return send_from_directory('','index.html')
 
 
 @app.route('/api/tweets/top')
@@ -33,7 +33,7 @@ def toptweets():
     if status != 200:
         return err(res)
 
-    return jsonify(dict(result="OK", tweets=res))
+    return jsonify(dict(tweets=res))
 
     
 def get_token():
@@ -44,7 +44,6 @@ def get_token():
         tk = tw_api.get_authtoken()
         cache.set(key, tk, timeout=10*60) 
     return tk
-    
     
 
 def err(reason):
