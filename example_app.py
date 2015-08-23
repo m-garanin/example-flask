@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json
+import json, urllib
 
 from flask import Flask, jsonify, send_from_directory, request
 from werkzeug.contrib.cache import SimpleCache
@@ -23,11 +23,10 @@ def toptweets():
 
     response:  200, { tweets:[tweet] }   |  400, {reason:"error message"}
     """
-
     q = request.args.get('q', '')
     if not q:
         return err("Empty query is not valid")
-
+     
     token = get_token()
     status, res = tw_api.get_toptweets(token, q)
     if status != 200:

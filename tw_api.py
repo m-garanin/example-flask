@@ -23,13 +23,16 @@ def get_toptweets(token, q):
     "return (200, tweets) | (error_status, reason)"
     conn = httplib.HTTPSConnection(TW_API_URL)
     headers = {'Authorization': 'Bearer %s' % token} 
-    params = {'q':q, 'result_type':'popular'}
+    params = {'q': q.encode('utf8'), 'result_type':'popular'}
+
     conn.request('GET', '/1.1/search/tweets.json?' + urllib.urlencode(params), headers=headers)
     resp = conn.getresponse()
+
     if resp.status != 200:
         return (resp.status, resp.reason)
         
     data = json.loads(resp.read())
     conn.close()
+
     return (200, data['statuses'])
     
