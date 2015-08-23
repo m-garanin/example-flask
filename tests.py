@@ -10,23 +10,49 @@ class AppTestCase(unittest.TestCase):
     
     def test_web(self):
         resp = self.app.get('/')
-        assert(resp.status_code == 200)
+        self.assertEqual(resp.status_code, 200)
+        
 
     def test_rest(self):
-        resp = self.app.get('/api/tweets/top')
-        assert(resp.status_code == 200)
-        assert( resp.content_type == 'application/json' )
+        # good case
+        resp = self.app.get('/api/tweets/top?q=Batman')
+        print resp.status_code
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json' )
+        data = json.loads(resp.data)
+        self.assertTrue(isinstance(data['tweets'], list) )
         
+        # good case (after expired cache)
+        cache.clear()
+        resp = self.app.get('/api/tweets/top?q=Batman')
+        print resp.status_code
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        self.assertTrue(isinstance(data['tweets'], list) )
+        
+
+        # bad case (without query)
+        resp = self.app.get('/api/tweets/top')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content_type, 'application/json' )
+        data = json.loads(resp.data)
+        self.assertTrue(isinstance(data['reason'], unicode) )
+        
+
+
     def test_tw_api(self):
         # auth
-        tks = tw_api.get_authtokens()
-        assert(type(tks) == dict)
-        assert(tks.get('token_type') == 'bearer')
-        print tks
+        token = tw_api.get_authtoken()
+        self.assertTrue(token)
+        print token
         
         # top-tweets
-        res = tw_api.get_toptweets('Spiderman', tks['access_token'])
+        res = tw_api.get_toptweets(token, 'New Spiderman')
+        self.assertEqual(type(res), tuple)
+        self.assertEqual(res[0], 200)
+        self.assertTrue(isinstance(res[1], list))
         
+
 
 if __name__ == '__main__':
     unittest.main()
